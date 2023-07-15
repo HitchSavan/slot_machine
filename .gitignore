@@ -1,0 +1,5 @@
+.env
+.venv
+__pycache__
+*.sai2
+*.pdf
