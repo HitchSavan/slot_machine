@@ -1,4 +1,4 @@
-from random import randrange, shuffle
+from random import randrange, shuffle, uniform
 from copy import deepcopy
 import numpy as np
 from progressbar import progressbar
@@ -6,8 +6,12 @@ from progressbar import progressbar
 symbols = [1, 2, 3, 4, 5, 6, 7, 8]
 wild = 'W'
 
-wild_combo = True
-no_output = False
+theorethical_drums = False
+wild_combo = False
+tune = False
+target_ret_percentage = 87
+needed_ret_percentage = 92
+trial = 300000
 
 if wild_combo:
     symbols[-1] = wild
@@ -155,24 +159,46 @@ if not wild_combo:
 
 payment = 5
 
-if not wild_combo:
-    pre_drums = [
-        [1, 4, 3, 5, 4, 2, 7, 8, 2, 6, 4, 3],
-        [3, 8, 7, 3, 1, 2, 5, 1, 3, 6, 1, 4, wild, 5],
-        [2, 7, 5, 1, 8, 2, 1, 4, 3, wild, 5, 6, 4, 5],
-        [5, 3, 4, 1, wild, 2, 6, 5, 3, 7, 1, 4, 8],
-        [5, 4, 8, 7, 1, 3, wild, 6, 2]
-    ]
-    pass
+if theorethical_drums:
+    # for theorethical
+    if not wild_combo:
+        pre_drums = [
+            [1, 4, 3, 5, 4, 2, 7, 8, 2, 6, 4, 3],
+            [3, 8, 7, 3, 1, 2, 5, 1, 3, 6, 1, 4, wild, 5],
+            [2, 7, 5, 1, 8, 2, 1, 4, 3, wild, 5, 6, 4, 5],
+            [5, 3, 4, 1, wild, 2, 6, 5, 3, 7, 1, 4, 8],
+            [5, 4, 8, 7, 1, 3, wild, 6, 2]
+        ]
+        pass
+    else:
+        pre_drums = [
+            [3, 2, 4, 3, 5, 6, 7, wild, 4, 1, 2, 3, 4, 5, 1, 2, 3, 4, 1, 3, 4, 1],
+            [2, 1, 3, 4, 5, 6, 7, wild, 3, 2, 5, 3, 2, 4, 3, 2, 5, 4, 3, 5, 4, 2, 1, 5, 2, 1, 5],
+            [1, 5, 3, 1, 7, 6, 1, wild, 4, 5, 1, 4, 2, 3, 4, 1, 3, 4, 1, 3, 4, 1, 5, 3, 1, 2, 4, 1, 2, 4],
+            [1, 4, 3, 1, 4, 5, 1, 6, 7, 1, wild, 3, 1, 2, 3, 1, 4, 2, 1, 5, 3, 1, 4, 3, 1, 2, 5, 1, 4, 2],
+            [1, 2, 3, 4, 5, 6, 7, wild]
+        ]
+        pass
 else:
-    pre_drums = [
-        [3, 2, 4, 3, 5, 6, 7, wild, 4, 1, 2, 3, 4, 5, 1, 2, 3, 4, 1, 3, 4, 1],
-        [2, 1, 3, 4, 5, 6, 7, wild, 3, 2, 5, 3, 2, 4, 3, 2, 5, 4, 3, 5, 4, 2, 1, 5, 2, 1, 5],
-        [1, 5, 3, 1, 7, 6, 1, wild, 4, 5, 1, 4, 2, 3, 4, 1, 3, 4, 1, 3, 4, 1, 5, 3, 1, 2, 4, 1, 2, 4],
-        [1, 4, 3, 1, 4, 5, 1, 6, 7, 1, wild, 3, 1, 2, 3, 1, 4, 2, 1, 5, 3, 1, 4, 3, 1, 2, 5, 1, 4, 2],
-        [1, 2, 3, 4, 5, 6, 7, wild]
-    ]
-    pass
+    # for practice
+    if not wild_combo:
+        pre_drums = [
+            [8, 4, 1, 3, 6, 1, 5, 4, 1, 3, 4, 1, 6, 5, 2, 7, 5, 1, 2, 5, 1, 4, 5, 1, 4, 5, 2, 3, 5, 2, 1, 5],
+            [5, 3, 2, 5, 4, 2, 5, 6, 2, 5, 4, 6, 5, 1, 6, 5, 4, 6, 5, 1, 6, 5, 8, 4, 6, 1, wild, 5, 6, 2, 5, 7, 6, 5, 2, 3, 6, 2, 3, 1, 2, 3, 5, 2, 3, 5, 2, 1, 5, 4, 2, 5, 3, 2],
+            [wild, 5, 2, 3, 5, 2, 1, 5, 2, 6, 5, 3, 2, 1, 4, 3, 2, 4, 5, 2, 3, 4, 7, 3, 1, 4, 3, 1, 5, 4, 2, 5, 4, 6, 5, 1, 4, 5, 1, 8, 5, 1, 3, 5, 1, 3, 5, 6],
+            [2, 3, 4, 5, 2, 4, 1, 5, 4, 6, 2, 1, 5, 3, 2, 8, 6, 4, wild, 6, 4, 2, 7, 4],
+            [3, 5, 2, 1, wild, 6, 4, 7, 8]
+        ]
+        pass
+    else:
+        pre_drums = [
+            [1, 2, 3, wild, 2, 3, 5, 2, 4, 5, 1, 4, 6, 1, 3, 2, 4, 1, 3, 2, 1, 3, 7, 6],
+            [2, wild, 3, 2, 4, 3, 2, 4, 3, 7, 4, 3, 2, 5, 4, 2, 1, 3, 2, 5, 1, 2, 4, 1, 5, 4, 1, 6, 4, 5, 6, 4, 1, 2, 6, 5, 4, 6, 5, 4, 3, 1, 4, 3],
+            [5, 2, 1, 5, 2, 4, 6, 2, 5, 3, 4, 2, 3, wild, 5, 3, 1, 5, 2, 4, 3, 2, 5, 3, 2, 1, 6, 7, 5, 6, 4, 5, 3, 2, 5, 6, 4, 5, 2, 3],
+            [5, 3, 2, 5, 3, 7, 5, 3, 4, 6, 3, 4, 6, 3, 2, 5, 3, 2, 5, wild, 2, 6, 1],
+            [4, 2, 5, 6, 7, wild, 3, 1]
+        ]
+        pass
 
 def drum_sorting(drums):
     success = True
@@ -191,10 +217,11 @@ def sort_drums(drums):
     for drum in drums:
         shuffle(drum)
 
-    while(True):
-        success = drum_sorting(pre_drums)
+    for i in range(500):
+        success = drum_sorting(drums)
         if success:
             break
+    return success
 
 def calculate_line_stats(symbols, wins, drums, wild_combo, payment, line, no_output, wild):
     win_payment = 0
@@ -225,15 +252,15 @@ def bruteforce(drums):
     
     tuned_drums = deepcopy(drums)
 
-    for i in range(100):
+    for i in range(1000):
         if not wild_combo:
-            tuned_drums[randrange(4)].append(symbols[randrange(5)])
+            tuned_drums[round(uniform(0, 3))].append(symbols[round(uniform(0, 5))])
         else:
-            tuned_drums[randrange(4)].append(symbols[randrange(5)])
+            tuned_drums[round(uniform(0, 3))].append(symbols[round(uniform(0, 5))])
 
-        win_payment, ret_perc, win_chance = calculate_line_stats(symbols, wins, tuned_drums, wild_combo, payment=1, line=1, no_output=True, wild=-1)
-        
-        if ret_perc < 93:
+        win_payment, ret_perc, win_chance = calculate_line_stats(symbols, wins, tuned_drums, wild_combo, payment=1, line=0, no_output=True, wild='W')
+        print(ret_perc, end=" ")
+        if ret_perc < target_ret_percentage+1:
             break
     return tuned_drums, ret_perc
 
@@ -259,7 +286,7 @@ def check_win(matrix, wild, lines):
 def roll(drums, wild, lines, no_output):
     out_matrix = [[],[],[]]
     for drum in drums:
-        top = randrange(len(drum))
+        top = round(uniform(0, len(drum)-1))
         out_matrix[0].append(drum[top])
         out_matrix[1].append(drum[(top + 1) % len(drum)])
         out_matrix[2].append(drum[(top + 2) % len(drum)])
@@ -270,41 +297,57 @@ def roll(drums, wild, lines, no_output):
         
     return check_win(out_matrix, wild, lines)
 
+
 total_chance = 0
 total_win_payment = 0
 for i in range(5):
-    win_payment, ret_perc, win_chance = calculate_line_stats(symbols, wins, pre_drums, wild_combo, payment=1, line=i, no_output=no_output, wild=wild)
+    win_payment, ret_perc, win_chance = calculate_line_stats(symbols, wins, pre_drums, wild_combo, payment=payment/5, line=i, no_output=True, wild=wild)
     total_chance += win_chance
     total_win_payment += win_payment
-print(f"Total win chance on every line (Hit): {total_chance}",
-    f"Total win payment: {total_win_payment}",
-    f"Total return percentage: {round((total_win_payment / payment) * 100, 2)}%", sep="\n")
-'''
-tests_quantity = 300000
-print(f"Running {tests_quantity} spins...")
-ret_perc = []
-for i in range(tests_quantity):
-    win_summ = 0
-    res = roll(pre_drums, wild, lines, no_output)
+print("_______________________________________________",
+      f"Total win chance on every line (Hit): {total_chance}",
+      f"Total win payment: {total_win_payment}",
+      f"Total return percentage: {round((total_win_payment / payment) * 100, 2)}%", sep="\n")
 
-    for w in res:
-        win_summ += wins[w][res[w]]
 
-    ret_perc.append((win_summ / 5) * 100)
+if tune:
+    for i in range(100):
+        tuned_drums, ret_perc = bruteforce(drums)
+        if ret_perc > target_ret_percentage-0.05 and ret_perc < target_ret_percentage+0.05:
+            break
+    print()
+    if not (ret_perc > target_ret_percentage-0.05 and ret_perc < target_ret_percentage+0.05):
+        print("Cannot get target return percentage, try again")
+    else:    
+        print(f"Drums: {tuned_drums}")
 
-    progressbar(tests_quantity, i)
+        if not sort_drums(tuned_drums):
+            print("Cannot generate drums, try again")
+        else:
+            pre_drums = tuned_drums
 
-print()
-print(f"Mean of return percentage: {round(np.mean(np.array(ret_perc)), 2)}%")
-print(f"Hit: {round((len(ret_perc) - ret_perc.count(0)) / len(ret_perc), 2)}")
-print(f"STD of return percentage of every game: {round(np.std(np.array(ret_perc)), 2)}%")
-print(f"STD of return percentage (target difference): {round(abs(np.mean(np.array(ret_perc)) - (total_win_payment / payment) * 100) / 3, 2)}%")
-'''
+if trial:
+    trial_STDs = []
+    trials_num = 5
+    for j in range(trials_num):
+        print(f"Running {trial} spins...")
+        ret_perc = []
+        for i in range(trial):
+            win_summ = 0
+            res = roll(pre_drums, wild, lines, no_output=True)
 
-'''
-for i in range(100):
-    tuned_drums, ret_perc = bruteforce(drums)
-    if ret_perc > 91.95 and ret_perc < 92.10:
-        break
-print(f"Drums: {tuned_drums}")
-'''
+            for w in res:
+                win_summ += wins[w][res[w]]
+
+            ret_perc.append((win_summ / 5) * 100)
+
+            progressbar(trial, i)
+
+        #trial_STDs.append(round(abs(np.mean(np.array(ret_perc)) - (total_win_payment / payment) * 100) / 3, 2))
+        trial_STDs.append(round(abs(np.mean(np.array(ret_perc)) - needed_ret_percentage) / 3, 2))
+        print()
+        print(f"Mean of return percentage: {round(np.mean(np.array(ret_perc)), 2)}%")
+        print(f"Hit: {round((len(ret_perc) - ret_perc.count(0)) / len(ret_perc), 2)}")
+        print(f"STD of return percentage of every game: {round(np.std(np.array(ret_perc)), 2)}%")
+        print(f"STD of return percentage (target difference): {trial_STDs[-1]}%")
+    print(f"Mean of STD of {trials_num} trials of {trial}: {round(np.mean(np.array(trial_STDs)), 2)}%")
