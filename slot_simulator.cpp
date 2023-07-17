@@ -353,7 +353,7 @@ class SlotMachine {
         int rolls = 1;
         std::map<std::string, std::map<int, int>> winTable;
         std::vector<std::vector<std::vector<int>>> winLines;
-        bool wildCombo = true;
+        bool wildCombo = false;
         int payment = 1;
         int trials = 1;
         int trialsNums = 1;
@@ -432,6 +432,9 @@ class SlotMachine {
 int main() {
     
     SlotMachine* machine = new SlotMachine("config.txt");
+
+    machine->printOut();
+    machine->calcilateStats();
     
     std::vector<int> trials = {10000, 50000, 100000, 300000, 1000000};
 
