@@ -9,7 +9,7 @@ wild = 'W'
 
 theorethical_drums = False
 wild_combo = False
-tune = False
+generate_drums = False
 
 if wild_combo:
     target_ret_percentage = 87
@@ -165,7 +165,7 @@ if not wild_combo:
 payment = 5
 
 if theorethical_drums:
-    # for theorethical
+    # for theorethical 92%
     if not wild_combo:
         pre_drums = [
             [8, 5, 6, 4, 5, 7, 2, 1, 7, 3, 5, 6],
@@ -185,7 +185,7 @@ if theorethical_drums:
         ]
         pass
 else:
-    # for practice
+    # for practical 92%
     if not wild_combo:
         pre_drums = [
             [1, 3, 8, 5, 6, 4, 7, 6, 4, 2, 8, 4],
@@ -315,7 +315,7 @@ print("_______________________________________________",
       f"Total return percentage: {round((total_win_payment / payment) * 100, 2)}%", sep="\n")
 
 
-if tune:
+if generate_drums:
     for i in range(100):
         tuned_drums, ret_perc = bruteforce(drums)
         if ret_perc > target_ret_percentage-0.05 and ret_perc < target_ret_percentage+0.05:
