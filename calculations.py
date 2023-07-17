@@ -1,17 +1,18 @@
-from random import randrange, shuffle, uniform
+from random import shuffle, uniform
 from copy import deepcopy
 import numpy as np
 from progressbar import progressbar
+import os
 
 symbols = [1, 2, 3, 4, 5, 6, 7, 8]
 wild = 'W'
 
 theorethical_drums = False
-wild_combo = False
+wild_combo = True
 tune = False
 target_ret_percentage = 87
 needed_ret_percentage = 92
-trial = 300000
+trial = 0
 
 if wild_combo:
     symbols[-1] = wild
@@ -351,3 +352,28 @@ if trial:
         print(f"STD of return percentage of every game: {round(np.std(np.array(ret_perc)), 2)}%")
         print(f"STD of return percentage (target difference): {trial_STDs[-1]}%")
     print(f"Mean of STD of {trials_num} trials of {trial}: {round(np.mean(np.array(trial_STDs)), 2)}%")
+
+save_path = f"{os.getcwd()}\\output"
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
+
+with open(f"{save_path}\\config.txt", "w") as file:
+    file.write(f"{wild} ")
+    for line in pre_drums:
+        file.write("\n")
+        for s in line:
+            file.write(f"{s} ")
+    file.write("\nwin_table\n")
+    for symbol in wins:
+        file.write(f"{symbol} ")
+    for win_num in list(wins[list(wins.keys())[0]]):
+        file.write(f"\n{str(win_num)} ")
+        for symbol in wins:
+            file.write(f"{wins[symbol][win_num]} ")
+    file.write("\nlines")
+    for line in lines:
+        file.write("\n")
+        for coords in line:
+            for coord in coords:
+                file.write(f"{coord} ")
+    file.write(f"\ntrials\n{300000}")

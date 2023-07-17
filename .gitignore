@@ -3,3 +3,4 @@
 __pycache__
 *.sai2
 *.pdf
+.vscode
