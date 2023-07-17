@@ -121,21 +121,78 @@ class Drum {
 
 class SlotMachine {
     public:
-        SlotMachine(char wild,
-                std::vector<std::vector<char>>& drums,
-                std::map<std::string, std::map<int, int>>& winTable,
-                std::vector<std::vector<std::vector<int>>>& winLines,
-                int trials) {
-            Drum* drumP;
-            this->wild = wild;
-            for (std::vector<char> drum : drums) {
-                drumP = new Drum(drum);
-                this->drums.push_back(drumP);
-            }
+        SlotMachine(std::string filename) {
+            std::vector<std::vector<char>> drums;
+            std::vector<char> drum;
+            std::map<std::string, std::map<int, int>> winTable;
+            std::vector<std::string> symbols;
+            std::vector<std::vector<std::vector<int>>> winLines;
+            std::vector<std::vector<int>> winLine;
+            std::vector<int> lineCoords;
 
-            this->winTable = winTable;
-            this->winLines = winLines;
-            this->trials = trials;
+            std::ifstream configFile(filename);
+
+            std::string line, str;
+            char wild;
+            int s, trials;
+
+            srand(time(NULL));
+
+            if (configFile.is_open()) {
+                std::getline(configFile, line);
+                wild = line[0];
+
+                while (std::getline(configFile, line) && line != "win_table") {
+                    for (auto a : line)
+                        if (a != ' ')
+                            drum.push_back(a);
+                    drums.push_back(drum);
+                    drum.clear();
+                }
+
+                std::getline(configFile, line);
+                std::stringstream ss(line);
+                while (getline(ss, str, ' '))
+                    symbols.push_back(str);
+                int i;
+                while (std::getline(configFile, line) && line != "lines") {
+                    std::stringstream ss(line);
+                    i = -1;
+                    while (getline(ss, str, ' ')) {
+                        if (i == -1) {
+                            s = stoi(str);
+                        } else {
+                            winTable[symbols[i]][s] = stoi(str);
+                        }
+                        i++;
+                    }
+                }
+
+                while (std::getline(configFile, line) && line != "trials") {
+                    std::stringstream ss(line);
+                    i = 0;
+                    int j = 0;
+                    while (getline(ss, str, ' ')) {
+                        lineCoords.push_back(stoi(str));
+                        i++;
+                        if (i > 1) {
+                            i = 0;
+                            winLine.push_back(lineCoords);
+                            lineCoords.clear();
+                        }
+                    }
+                    winLines.push_back(winLine);
+                    winLine.clear();
+                }
+
+                std::getline(configFile, line);
+                trials = stoi(line);
+
+                this->setConfig(wild, drums, winTable, winLines, trials);
+
+            } else {
+                std::cout << "Cant open config file";
+            }
         }
 
         ~SlotMachine() {
@@ -228,6 +285,13 @@ class SlotMachine {
 
             std::map<std::string, int> result = checkWin(outMatrix);
 
+            if (result.empty() && this->winstreak) {
+                this->winstreakTime.push_back(this->winstreak);
+                this->winstreak = 0;
+            } else {
+                this->winstreak++;
+            }
+
             if (this->trials == 1) {
                 std::cout << std::endl;
                 for (int i = 0; i < outMatrix.size(); i++) {
@@ -248,8 +312,6 @@ class SlotMachine {
                 }
             }
 
-
-                
             return result;
         }
 
@@ -273,6 +335,11 @@ class SlotMachine {
                 
             }
             std::cout << "Mean of STD of " << trialsNums << " trials of " << trials << ": " << mean(trialSTDs) << "%";
+            if (this->winstreak) {
+                this->winstreakTime.push_back(this->winstreak);
+                this->winstreak = 0;
+            }
+            std::cout << std::endl << "Mean number of wins in a row: " << mean(this->winstreakTime);
         }
 
         void setTrials(int lenght) {
@@ -290,6 +357,25 @@ class SlotMachine {
         int payment = 1;
         int trials = 1;
         int trialsNums = 1;
+        int winstreak = 0;
+        std::vector<double> winstreakTime;
+
+        void setConfig(char wild,
+                std::vector<std::vector<char>>& drums,
+                std::map<std::string, std::map<int, int>>& winTable,
+                std::vector<std::vector<std::vector<int>>>& winLines,
+                int trials) {
+            Drum* drumP;
+            this->wild = wild;
+            for (std::vector<char> drum : drums) {
+                drumP = new Drum(drum);
+                this->drums.push_back(drumP);
+            }
+
+            this->winTable = winTable;
+            this->winLines = winLines;
+            this->trials = trials;
+        }
 
         std::tuple<double, double, double> calculateLineStat(int line) {
             double winPayment = 0;
@@ -344,80 +430,15 @@ class SlotMachine {
 
 
 int main() {
-    std::vector<std::vector<char>> drums;
-    std::vector<char> drum;
-    std::map<std::string, std::map<int, int>> winTable;
-    std::vector<std::string> symbols;
-    std::vector<std::vector<std::vector<int>>> winLines;
-    std::vector<std::vector<int>> winLine;
-    std::vector<int> lineCoords;
-
-    std::ifstream configFile("config.txt");
-
-    std::string line, str;
-    char wild;
-    int s, trials;
-
-    srand(time(NULL));
-
-    if (configFile.is_open()) {
-        std::getline(configFile, line);
-        wild = line[0];
-
-        while (std::getline(configFile, line) && line != "win_table") {
-            for (auto a : line)
-                if (a != ' ')
-                    drum.push_back(a);
-            drums.push_back(drum);
-            drum.clear();
-        }
-
-        std::getline(configFile, line);
-        std::stringstream ss(line);
-        while (getline(ss, str, ' '))
-            symbols.push_back(str);
-        int i;
-        while (std::getline(configFile, line) && line != "lines") {
-            std::stringstream ss(line);
-            i = -1;
-            while (getline(ss, str, ' ')) {
-                if (i == -1) {
-                    s = stoi(str);
-                } else {
-                    winTable[symbols[i]][s] = stoi(str);
-                }
-                i++;
-            }
-        }
-
-        while (std::getline(configFile, line) && line != "trials") {
-            std::stringstream ss(line);
-            i = 0;
-            int j = 0;
-            while (getline(ss, str, ' ')) {
-                lineCoords.push_back(stoi(str));
-                i++;
-                if (i > 1) {
-                    i = 0;
-                    winLine.push_back(lineCoords);
-                    lineCoords.clear();
-                }
-            }
-            winLines.push_back(winLine);
-            winLine.clear();
-        }
-
-        std::getline(configFile, line);
-        trials = stoi(line);
-
-    } else {
-        std::cout << "Cant open config file";
-        return 0;
-    }
     
-    SlotMachine* machine = new SlotMachine(wild, drums, winTable, winLines, trials);
+    SlotMachine* machine = new SlotMachine("config.txt");
     
-    machine->roll();
+    std::vector<int> trials = {10000, 50000, 100000, 300000, 1000000};
+
+    for (auto t : trials) {
+        machine->setTrials(t);
+        machine->gambleTrials();
+    };
 
     return 0;
 }
