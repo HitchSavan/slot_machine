@@ -70,7 +70,6 @@ class Drum {
 
         void printOut() {
             DrumCell* p = this->head;
-            int curPosition = 0;
             
             do {
                 std::cout << p->symbol << " ";
@@ -171,7 +170,6 @@ class SlotMachine {
                 while (std::getline(configFile, line) && line != "trials") {
                     std::stringstream ss(line);
                     i = 0;
-                    int j = 0;
                     while (getline(ss, str, ' ')) {
                         lineCoords.push_back(stoi(str));
                         i++;
