@@ -16,7 +16,7 @@ if wild_combo:
 else:
     target_ret_percentage = 86.5
 needed_ret_percentage = 92
-trial = 0
+trial = 1000000
 
 if wild_combo:
     symbols[-1] = wild
@@ -157,12 +157,14 @@ lines = [
         (2, 4)
     ]
 ]
-
+'''
+'''
 if not wild_combo:
     for drum in drums[1:]:
         drum.append(wild)
 
-payment = 5
+line_payment = 1
+payment = len(lines) * line_payment
 
 if theorethical_drums:
     # for theorethical 92%
@@ -241,6 +243,7 @@ def calculate_line_stats(symbols, wins, drums, wild_combo, payment, line, no_out
                 if j < win:
                     chance *= duplicates / len(drum)
                 else:
+                    break
                     chance *= (len(drum) - duplicates) / len(drum)
             win_payment += chance * wins[s][win]
             win_chance += chance
@@ -263,7 +266,7 @@ def bruteforce(drums):
         else:
             tuned_drums[round(uniform(0, 3))].append(symbols[round(uniform(0, 5))])
 
-        win_payment, ret_perc, win_chance = calculate_line_stats(symbols, wins, tuned_drums, wild_combo, payment=1, line=0, no_output=True, wild='W')
+        win_payment, ret_perc, win_chance = calculate_line_stats(symbols, wins, tuned_drums, wild_combo, payment=line_payment, line=0, no_output=True, wild='W')
         print(ret_perc, end=" ")
         if ret_perc < target_ret_percentage+1:
             break
@@ -305,8 +308,8 @@ def roll(drums, wild, lines, no_output):
 
 total_chance = 0
 total_win_payment = 0
-for i in range(5):
-    win_payment, ret_perc, win_chance = calculate_line_stats(symbols, wins, pre_drums, wild_combo, payment=payment/5, line=i, no_output=True, wild=wild)
+for i in range(len(lines)):
+    win_payment, ret_perc, win_chance = calculate_line_stats(symbols, wins, pre_drums, wild_combo, payment=line_payment, line=i, no_output=False, wild=wild)
     total_chance += win_chance
     total_win_payment += win_payment
 print("_______________________________________________",
@@ -314,6 +317,7 @@ print("_______________________________________________",
       f"Total win payment: {total_win_payment}",
       f"Total return percentage: {round((total_win_payment / payment) * 100, 2)}%", sep="\n")
 
+theorethical_ret_perc = ret_perc
 
 if generate_drums:
     for i in range(100):
@@ -333,6 +337,7 @@ if generate_drums:
 
 if trial:
     trial_STDs = []
+    theor_trial_STDs = []
     trials_num = 5
     for j in range(trials_num):
         print(f"Running {trial} spins...")
@@ -344,17 +349,19 @@ if trial:
             for w in res:
                 win_summ += wins[w][res[w]]
 
-            ret_perc.append((win_summ / 5) * 100)
+            ret_perc.append((win_summ / payment) * 100)
 
             progressbar(trial, i)
 
         #trial_STDs.append(round(abs(np.mean(np.array(ret_perc)) - (total_win_payment / payment) * 100) / 3, 2))
         trial_STDs.append(round(abs(np.mean(np.array(ret_perc)) - needed_ret_percentage) / 3, 2))
+        theor_trial_STDs.append(round(abs(np.mean(np.array(ret_perc)) - theorethical_ret_perc) / 3, 2))
         print()
         print(f"Mean of return percentage: {round(np.mean(np.array(ret_perc)), 2)}%")
         print(f"Hit: {round((len(ret_perc) - ret_perc.count(0)) / len(ret_perc), 2)}")
         print(f"STD of return percentage of every game: {round(np.std(np.array(ret_perc)), 2)}%")
-        print(f"STD of return percentage (target difference): {trial_STDs[-1]}%")
+        print(f"STD of return percentage (target 92% difference): {trial_STDs[-1]}%")
+        print(f"STD of return percentage (theorethical {theorethical_ret_perc} difference): {trial_STDs[-1]}%")
     print(f"Mean of STD of {trials_num} trials of {trial}: {round(np.mean(np.array(trial_STDs)), 2)}%")
 
 save_path = f"{os.getcwd()}\\output"
