@@ -7,16 +7,16 @@ import os
 symbols = [8, 7, 6, 5, 4, 3, 2, 1]
 wild = 'W'
 
-theorethical_drums = False
+theoretical_drums = False
 wild_combo = False
 generate_drums = False
 
 if wild_combo:
-    target_ret_percentage = 87
+    target_ret_percentage = 92
 else:
-    target_ret_percentage = 86.5
+    target_ret_percentage = 92
 needed_ret_percentage = 92
-trial = 1000000
+trial = 300000
 
 if wild_combo:
     symbols[-1] = wild
@@ -166,15 +166,15 @@ if not wild_combo:
 line_payment = 1
 payment = len(lines) * line_payment
 
-if theorethical_drums:
-    # for theorethical 92%
+if theoretical_drums:
+    # for theoretical 92%
     if not wild_combo:
         pre_drums = [
-            [8, 5, 6, 4, 5, 7, 2, 1, 7, 3, 5, 6],
-            [6, 1, 2, 6, 8, 7, 4, 8, 6, 3, 8, 5, wild, 4],
-            [7, 2, 4, 8, 1, 7, 8, 5, 6, wild, 4, 3, 5, 4],
-            [4, 6, 5, 8, wild, 7, 3, 4, 6, 2, 8, 5, 1],
-            [4, 5, 1, 2, 8, 6, wild, 3, 7]
+            [6, 8, 5, 4, 6, 1, 3, 4, 7, 3, 6, 8, 5, 6, 4, 3, 5, 4, 8, 2],
+            [7, wild, 5, 7, 6, 4, 5, 6, 4, 5, 7, 6, 1, 7, 6, 4, 7, 6, 5, 7, 6, 4, 7, 3, 2, 7, 8, 6, 7, 3, 6, 7, 3, 6, 7, 3, 4],
+            [6, 4, 5, 6, 8, 5, 1, 8, 5, 4, 6, 3, 7, 5, 8, 7, 4, wild, 6, 5, 4, 6, 5, 2, 7, 6, 4, 5, 6, 7, 8, 5, 7, 4, 3, 6, 4, 5],
+            [5, 4, 6, 7, 5, 4, 7, 1, 8, 7, 3, 5, 6, 8, 2, 7, 4, wild, 6],
+            [4, wild, 5, 6, 7, 3, 1, 8, 2]
         ]
         pass
     else:
@@ -231,8 +231,8 @@ def sort_drums(drums):
     return success
 
 def calculate_line_stats(symbols, wins, drums, wild_combo, payment, line, no_output, wild):
-    win_payment = 0
-    win_chance = 0
+    win_payment = []
+    win_chance = []
     for s in symbols:
         if not wild_combo and s == wild:
             continue
@@ -241,20 +241,22 @@ def calculate_line_stats(symbols, wins, drums, wild_combo, payment, line, no_out
             for j, drum in enumerate(drums):
                 duplicates = drum.count(s) + (0 if s == wild else drum.count(wild))
                 if j < win:
-                    chance *= duplicates / len(drum)
+                    chance *= duplicates / len(drum) 
                 else:
-                    break
-                    chance *= (len(drum) - duplicates) / len(drum)
-            win_payment += chance * wins[s][win]
-            win_chance += chance
+                    chance *= (len(drum) - duplicates) / (len(drum) - ((len(drum) - duplicates) / len(drum)))
+
+            win_payment.append(chance * wins[s][win])
+            win_chance.append(chance)
+
             if not no_output:
-                print(f"Chances of {s} occurs {win} times on line {line+1}: {chance}, with payment {chance * wins[s][win]}")
-    ret_perc = round(win_payment / payment * 100, 2)
+                print(f"Chances of {s} occurs {win} times on line {line+1}: {chance}, with payment {chance * wins[s][win]} (for {wins[s][win]})")
+    
+    ret_perc = np.sum(win_payment) / payment * 100
     if not no_output:
-        print(f"Mean win payment: {win_payment}", f"Casino salary: {payment - win_payment}",
-              f"Return percentage: {ret_perc}%",
-              f"Win chances: {win_chance}", sep="\n")
-    return (win_payment, ret_perc, win_chance)
+        print(f"Mean win payment: {np.sum(win_payment)}", f"Casino salary: {payment - np.sum(win_payment)}",
+              f"Return percentage: {round(ret_perc, 2)}%",
+              f"Win chances: {np.sum(win_chance)}", sep="\n")
+    return (np.sum(win_payment), ret_perc, np.sum(win_chance))
 
 def bruteforce(drums):
     
@@ -283,12 +285,14 @@ def check_win(matrix, wild, lines):
                 break
 
         if (symbol == matrix[line[1][0]][line[1][1]] or matrix[line[1][0]][line[1][1]] == wild) and (symbol == matrix[line[2][0]][line[2][1]] or matrix[line[2][0]][line[2][1]] == wild):
-            lines_wins[symbol] = 3
+            if 3 in wins[symbol]:
+                lines_wins[symbol] = 3
             if symbol == matrix[line[3][0]][line[3][1]] or matrix[line[3][0]][line[3][1]] == wild:
-                lines_wins[symbol] += 1
+                if 4 in wins[symbol]:
+                    lines_wins[symbol] = 4
                 if symbol == matrix[line[4][0]][line[4][1]] or matrix[line[4][0]][line[4][1]] == wild:
-                    lines_wins[symbol] += 1
-
+                    if 5 in wins[symbol]:
+                        lines_wins[symbol] = 5
     return lines_wins
 
 def roll(drums, wild, lines, no_output):
@@ -306,18 +310,18 @@ def roll(drums, wild, lines, no_output):
     return check_win(out_matrix, wild, lines)
 
 
-total_chance = 0
+total_chance = []
 total_win_payment = 0
 for i in range(len(lines)):
-    win_payment, ret_perc, win_chance = calculate_line_stats(symbols, wins, pre_drums, wild_combo, payment=line_payment, line=i, no_output=False, wild=wild)
-    total_chance += win_chance
+    win_payment, ret_perc, win_chance = calculate_line_stats(symbols, wins, pre_drums, wild_combo, payment=line_payment, line=i, no_output=True, wild=wild)
+    total_chance.append(win_chance)
     total_win_payment += win_payment
 print("_______________________________________________",
-      f"Total win chance on every line (Hit): {total_chance}",
+      f"Total win chance on every line (Hit): {sum(total_chance)}",
       f"Total win payment: {total_win_payment}",
       f"Total return percentage: {round((total_win_payment / payment) * 100, 2)}%", sep="\n")
 
-theorethical_ret_perc = ret_perc
+theoretical_ret_perc = ret_perc
 
 if generate_drums:
     for i in range(100):
@@ -344,7 +348,7 @@ if trial:
         ret_perc = []
         for i in range(trial):
             win_summ = 0
-            res = roll(pre_drums, wild, lines, no_output=True)
+            res = roll(pre_drums, wild, lines, no_output=(False if trial == 1 else True))
 
             for w in res:
                 win_summ += wins[w][res[w]]
@@ -355,13 +359,13 @@ if trial:
 
         #trial_STDs.append(round(abs(np.mean(np.array(ret_perc)) - (total_win_payment / payment) * 100) / 3, 2))
         trial_STDs.append(round(abs(np.mean(np.array(ret_perc)) - needed_ret_percentage) / 3, 2))
-        theor_trial_STDs.append(round(abs(np.mean(np.array(ret_perc)) - theorethical_ret_perc) / 3, 2))
+        theor_trial_STDs.append(round(abs(np.mean(np.array(ret_perc)) - theoretical_ret_perc) / 3, 2))
         print()
         print(f"Mean of return percentage: {round(np.mean(np.array(ret_perc)), 2)}%")
-        print(f"Hit: {round((len(ret_perc) - ret_perc.count(0)) / len(ret_perc), 2)}")
+        print(f"Hit: {(len(ret_perc) - ret_perc.count(0)) / len(ret_perc)}")
         print(f"STD of return percentage of every game: {round(np.std(np.array(ret_perc)), 2)}%")
         print(f"STD of return percentage (target 92% difference): {trial_STDs[-1]}%")
-        print(f"STD of return percentage (theorethical {theorethical_ret_perc} difference): {trial_STDs[-1]}%")
+        print(f"STD of return percentage (theoretical {theoretical_ret_perc} difference): {theor_trial_STDs[-1]}%")
     print(f"Mean of STD of {trials_num} trials of {trial}: {round(np.mean(np.array(trial_STDs)), 2)}%")
 
 save_path = f"{os.getcwd()}\\output"
