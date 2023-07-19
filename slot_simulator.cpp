@@ -389,7 +389,7 @@ class SlotMachine {
                         if (j < nums)
                             chance *= duplicates / drum->size();
                         else
-                            chance *= (drum->size() - duplicates) / drum->size();
+                            chance *= (drum->size() - duplicates) / (drum->size() - ((drum->size() - duplicates) / drum->size()));
                         j++;
                     }
                     winPayment += chance * pay;
